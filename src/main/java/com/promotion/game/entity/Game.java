@@ -1,5 +1,6 @@
 package com.promotion.game.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.promotion.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -27,6 +28,7 @@ public class Game {
 
     @ManyToMany(mappedBy = "games")
     @ToString.Exclude
+    @JsonIgnore
     private List<User> agents;
 
     @Override

@@ -53,6 +53,8 @@ public class GameController {
         String jwtToken = token.substring(7);
         String randomId = jwtService.extractUsername(jwtToken);
 
+        System.out.println("Request Controller Starting");
+
         GameAndAgentJoinResponse resObj = gameService.assignGameToAgent(randomId,request);
         return ResponseEntity.status(resObj.getStatusCode()).body(resObj);
     }

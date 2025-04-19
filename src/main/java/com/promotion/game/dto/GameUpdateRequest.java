@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GameUpdateRequest {
-    private Integer gameId;
+    private String gameCode;
 }

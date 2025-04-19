@@ -1,5 +1,7 @@
 package com.promotion.user.dto;
 
+import com.promotion.game.entity.Game;
+import com.promotion.ticket.dto.AgentGameAuthority;
 import com.promotion.utility.BaseResponse;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,4 +23,7 @@ public class Profile extends BaseResponse {
     private Integer ticketAmt;
     private String role;
     private List<SideMenu> sideMenus;
+    private List<Game> gameList;
+    private List<AgentGameAuthority> agentGameAuthorityList;
+
 }

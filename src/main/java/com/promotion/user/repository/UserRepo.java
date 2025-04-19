@@ -1,5 +1,6 @@
 package com.promotion.user.repository;
 
+import com.promotion.user.entity.Role;
 import com.promotion.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -11,4 +12,5 @@ import java.util.Optional;
 public interface UserRepo extends JpaRepository<User,Integer> {
     Optional<User> findByRandomId(String randomId);
     List<User> findByParentId(String randomId);
+    List<User> findByRole(Role role);
 }

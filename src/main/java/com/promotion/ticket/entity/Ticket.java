@@ -1,5 +1,6 @@
 package com.promotion.ticket.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.promotion.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -17,5 +18,6 @@ public class Ticket {
 
     @OneToOne(mappedBy = "ticket")
     @ToString.Exclude
+    @JsonIgnore
     private User user;
 }

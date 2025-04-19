@@ -94,13 +94,14 @@ public class GameServiceImpl implements GameService{
         System.out.println(request);
 
         List<Game> gameList = request.getGameUpdateRequestList().stream()
-                .map(game -> gameRepo.findById(Long.valueOf(game.getGameId()))
+                .map(game -> gameRepo.findByGameCode(game.getGameCode())
                         .orElseThrow(() -> new RuntimeException("Game not found")))
                 .collect(Collectors.toList());
-
+        System.out.println("Before game list");
         System.out.println(gameList);
 
         userAgentGet.setGames(gameList);
+
         userRepo.save(userAgentGet);
 
         return GameAndAgentJoinResponse
