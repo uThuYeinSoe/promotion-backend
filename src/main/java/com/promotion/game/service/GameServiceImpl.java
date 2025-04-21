@@ -128,7 +128,13 @@ public class GameServiceImpl implements GameService{
                     .gameList(gameList)
                     .build();
         }else if(userGet.getRole().equals(Role.AGENT)){
-            System.out.println("AGENT Role");
+            return GameResponse
+                    .builder()
+                    .statusMessage("API Good Working")
+                    .status(true)
+                    .statusCode(200)
+                    .gameList(userGet.getGames())
+                    .build();
         }else if(userGet.getRole().equals(Role.USER)){
             System.out.println("User Role");
         }

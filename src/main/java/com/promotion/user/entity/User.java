@@ -2,6 +2,8 @@ package com.promotion.user.entity;
 
 
 import com.promotion.game.entity.Game;
+import com.promotion.gameItem.entity.GameItem;
+import com.promotion.gameTicket.entity.GameTicket;
 import com.promotion.ticket.entity.Ticket;
 import jakarta.persistence.*;
 import lombok.*;
@@ -48,6 +50,12 @@ public class User implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "game_id")
     )
     private List<Game> games = new ArrayList<>();
+
+    @OneToMany(mappedBy = "agent", cascade = CascadeType.ALL)
+    private List<GameItem> gameItemList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "agent", cascade = CascadeType.ALL)
+    private List<GameTicket> gameTicketList = new ArrayList<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

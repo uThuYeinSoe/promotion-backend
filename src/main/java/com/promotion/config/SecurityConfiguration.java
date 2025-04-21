@@ -69,6 +69,16 @@ public class SecurityConfiguration {
                 .requestMatchers(GET, "api/v1/promotion/uc/profile").hasAnyAuthority(String.valueOf(ADMIN_READ),String.valueOf(AGENT_READ),String.valueOf(USER_READ))
                 .requestMatchers(GET, "api/v1/promotion/uc/getAgent").hasAuthority(String.valueOf(ADMIN_READ))
 
+                .requestMatchers("/api/v1/promotion/gi/**").hasAnyRole(ADMIN.name(),AGENT.name(),USER.name())
+                .requestMatchers(POST, "api/v1/promotion/gi/gameItem").hasAuthority(String.valueOf(AGENT_CREATE))
+                .requestMatchers(GET, "api/v1/promotion/gi/gameItem/**").hasAnyAuthority(String.valueOf(ADMIN_READ),String.valueOf(AGENT_READ),String.valueOf(USER_READ))
+                .requestMatchers(PUT, "api/v1/promotion/gi/gameItem").hasAnyAuthority(String.valueOf(ADMIN_UPDATE),String.valueOf(AGENT_UPDATE))
+
+                .requestMatchers("/api/v1/promotion/gtc/**").hasAnyRole(ADMIN.name(),AGENT.name(),USER.name())
+                .requestMatchers(POST, "api/v1/promotion/gtc/gameTicket").hasAuthority(String.valueOf(AGENT_CREATE))
+                .requestMatchers(GET, "api/v1/promotion/gtc/gameTicket").hasAnyAuthority(String.valueOf(ADMIN_READ),String.valueOf(AGENT_READ),String.valueOf(USER_READ))
+                .requestMatchers(PUT, "api/v1/promotion/gtc/gameTicket").hasAnyAuthority(String.valueOf(ADMIN_UPDATE),String.valueOf(AGENT_UPDATE))
+
 
                 .anyRequest()
                 .authenticated()
