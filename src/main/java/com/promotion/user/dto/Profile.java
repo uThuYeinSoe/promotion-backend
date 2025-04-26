@@ -1,5 +1,6 @@
 package com.promotion.user.dto;
 
+import com.promotion.game.dto.GameResponseObj;
 import com.promotion.game.entity.Game;
 import com.promotion.ticket.dto.AgentGameAuthority;
 import com.promotion.utility.BaseResponse;
@@ -23,7 +24,7 @@ public class Profile extends BaseResponse {
     private Integer ticketAmt;
     private String role;
     private List<SideMenu> sideMenus;
-    private List<Game> gameList;
+    private List<GameResponseObj> gameResponseObjList;
     private List<AgentGameAuthority> agentGameAuthorityList;
 
 }

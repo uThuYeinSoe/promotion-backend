@@ -31,6 +31,11 @@ public class AuthenticationController {
         return ResponseEntity.ok(service.agentRegister(adminRandomId,request));
     }
 
+    @PostMapping("/user/register")
+    public ResponseEntity<RegisterResponse> userRegister(@RequestBody RegisterRequest request){
+        return ResponseEntity.ok(service.userRegister(request));
+    }
+
 
     @PostMapping("/authenticate")
     public ResponseEntity<AuthenticationResponse> login(@RequestBody AuthenticationRequest request){

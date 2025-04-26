@@ -18,5 +18,6 @@ public interface GameItemRepo extends JpaRepository<GameItem,Long> {
     Optional<GameItem> findByIdAndAgent(@Param("id") Integer id, @Param("randomId") String randomId);
     Optional<GameItem> findByIdAndGame(Integer id, Game game);
     List<GameItem> findByAgentAndGame(User agent, Game game);
+    List<GameItem> findByAgentAndGameAndGameItemStatusTrue(User agent, Game game);
 
 }

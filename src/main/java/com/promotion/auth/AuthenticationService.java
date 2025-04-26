@@ -68,6 +68,40 @@ public class AuthenticationService {
     }
 
 
+    public RegisterResponse userRegister(RegisterRequest request) {
+
+        Optional<User> user = repository.findByRandomId(request.getParentId());
+        if(user.isEmpty()){
+            return RegisterResponse.builder()
+                    .statusMessage("Register Failed")
+                    .status(false)
+                    .statusCode(401)
+                    .randomId("Your Agent Id something wrong")
+                    .build();
+        }
+
+        User agentUser = user.get();
+
+        String randomId = RandomId.generateRandomId();
+
+        var userObj = User.builder()
+                .randomId(randomId)
+                .password(passwordEncoder.encode(request.getPassword()))
+                .role(Role.USER)
+                .parentId(agentUser.getRandomId())
+                .build();
+
+        repository.save(userObj);
+
+        return RegisterResponse.builder()
+                .statusMessage("Register Successfully")
+                .status(true)
+                .statusCode(201)
+                .randomId(userObj.getRandomId())
+                .build();
+    }
+
+
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         try {
             // Attempt to authenticate the user

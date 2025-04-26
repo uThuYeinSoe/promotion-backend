@@ -148,6 +148,70 @@ public class GameItemServiceImpl implements GameItemService{
         Optional<User> user = userRepo.findByRandomId(randomId);
         User userGet = user.get();
 
+        if(userGet.getRole().equals(Role.USER)){
+            Optional<User> agent = userRepo.findByRandomId(userGet.getParentId());
+            if(agent.isEmpty()){
+                return GameItemResp
+                        .builder()
+                        .statusMessage("Can't Find Agent")
+                        .status(false)
+                        .statusCode(400)
+                        .build();
+            }
+            User agentGet = agent.get();
+            Optional<Game> game = gameRepo.findById(id);
+            Game gameGet = game.get();
+
+            List<GameItem> gameItemList = gameItemRepo.findByAgentAndGame(agentGet,gameGet);
+
+            List<GameItemResp.gameItemDto> dtoList = gameItemList.stream().map(item -> {
+                GameItemResp.gameItemDto dto = new GameItemResp.gameItemDto();
+                dto.setId(item.getId());
+                dto.setGameCode(item.getGame().getGameCode());
+                dto.setGameName(item.getGame().getGameName());
+                dto.setGameItemName(item.getGameItem());
+                dto.setGameItemDesc(item.getGameItemDesc());
+                dto.setGameItemStatus(item.getGameItemStatus());
+                return dto;
+            }).toList();
+
+            return GameItemResp
+                    .builder()
+                    .statusMessage("API Good Working")
+                    .status(true)
+                    .statusCode(200)
+                    .randomAgentId(userGet.getRandomId())
+                    .gameItemDtos(dtoList)
+                    .build();
+        }else if(userGet.getRole().equals(Role.AGENT)){
+            Optional<Game> game = gameRepo.findById(id);
+            Game gameGet = game.get();
+
+            System.out.println(gameGet);
+
+            List<GameItem> gameItemList = gameItemRepo.findByAgentAndGame(userGet,gameGet);
+
+            List<GameItemResp.gameItemDto> dtoList = gameItemList.stream().map(item -> {
+                GameItemResp.gameItemDto dto = new GameItemResp.gameItemDto();
+                dto.setId(item.getId());
+                dto.setGameCode(item.getGame().getGameCode());
+                dto.setGameName(item.getGame().getGameName());
+                dto.setGameItemName(item.getGameItem());
+                dto.setGameItemDesc(item.getGameItemDesc());
+                dto.setGameItemStatus(item.getGameItemStatus());
+                return dto;
+            }).toList();
+
+            return GameItemResp
+                    .builder()
+                    .statusMessage("API Good Working")
+                    .status(true)
+                    .statusCode(200)
+                    .randomAgentId(userGet.getRandomId())
+                    .gameItemDtos(dtoList)
+                    .build();
+        }
+
         Optional<Game> game = gameRepo.findById(id);
         Game gameGet = game.get();
 

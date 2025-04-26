@@ -1,7 +1,10 @@
 package com.promotion.user.service;
 
+import com.promotion.game.dto.GameResponse;
+import com.promotion.game.dto.GameResponseObj;
 import com.promotion.game.entity.Game;
 import com.promotion.game.repo.GameRepo;
+import com.promotion.game.service.GameService;
 import com.promotion.navigation.entity.Navigation;
 import com.promotion.navigation.repo.NavigationRepo;
 import com.promotion.ticket.dto.AgentGameAuthority;
@@ -31,6 +34,7 @@ public class ProfileServiceImpl implements ProfileService{
     @Autowired private final UserRepo userRepo;
     @Autowired private final NavigationRepo navigationRepo;
     @Autowired private final GameRepo gameRepo;
+    @Autowired private final GameService gameService;
 
     @Override
     @Transactional
@@ -39,7 +43,9 @@ public class ProfileServiceImpl implements ProfileService{
         User userGet = user.get();
         Ticket userTicket = userGet.getTicket();
 
-        List<Game> gameList = null;
+        List<GameResponseObj> gameResponseObjList = new ArrayList<>();
+
+
         if(userGet.getRole().equals(Role.ADMIN)){
 
             List<User> agents = userRepo.findByRole(Role.AGENT);
@@ -61,10 +67,19 @@ public class ProfileServiceImpl implements ProfileService{
                 ));
             }
 
-            System.out.println("Hello World");
-            System.out.println(agentGameAuthorityList);
-
             List<Navigation> navByRole = navigationRepo.findAllByRoleName(String.valueOf(userGet.getRole()));
+            List<Game> games = gameRepo.findAll();
+            System.out.println(games);
+            gameResponseObjList = games.stream().map(
+                    game -> GameResponseObj
+                            .builder()
+                            .gameCode(game.getGameCode())
+                            .gameId(game.getId())
+                            .gameName(game.getGameName())
+                            .gameConversion(String.valueOf(game.getConversationRate()))
+                            .gameRoute(game.getGameRoute())
+                            .build()
+            ).collect(Collectors.toList());
 
             return Profile
                     .builder()
@@ -75,7 +90,7 @@ public class ProfileServiceImpl implements ProfileService{
                     .randomId(userGet.getRandomId())
                     .ticketAmt(userTicket.getTicketAmt())
                     .role(String.valueOf(userGet.getRole()))
-                    .gameList(gameList)
+                    .gameResponseObjList(gameResponseObjList)
                     .agentGameAuthorityList(agentGameAuthorityList)
                     .sideMenus(navByRole.stream().map(
                             nav -> new SideMenu(
@@ -85,9 +100,8 @@ public class ProfileServiceImpl implements ProfileService{
                     .build();
 
         }else if(userGet.getRole().equals(Role.AGENT)){
-            gameList = gameRepo.findGamesByRandomId(randomId);
             List<Navigation> navByRole = navigationRepo.findAllByRoleName(String.valueOf(userGet.getRole()));
-            System.out.println(gameList);
+
             return Profile
                     .builder()
                     .status(true)
@@ -97,7 +111,57 @@ public class ProfileServiceImpl implements ProfileService{
                     .randomId(userGet.getRandomId())
                     .ticketAmt(userTicket.getTicketAmt())
                     .role(String.valueOf(userGet.getRole()))
-                    .gameList(gameList)
+                    .gameResponseObjList(
+                            userGet.getGames()
+                                    .stream()
+                                    .map(
+                                            game -> {
+                                                return GameResponseObj
+                                                        .builder()
+                                                        .gameCode(game.getGameCode())
+                                                        .gameId(game.getId())
+                                                        .gameRoute(game.getGameRoute())
+                                                        .gameConversion(String.valueOf(game.getConversationRate()))
+                                                        .gameName(game.getGameName())
+                                                        .build();
+                                            }
+                                    )
+                                    .collect(Collectors.toList()))
+                    .sideMenus(navByRole.stream().map(
+                            nav -> new SideMenu(
+                                    nav.getId().intValue(),nav.getNavName(),nav.getNavCode()
+                            )
+                    ).collect(Collectors.toList()))
+                    .build();
+        }else if(userGet.getRole().equals(Role.USER)){
+            GameResponse resObj = gameService.getGameAll(userGet.getRandomId());
+
+            List<Navigation> navByRole = navigationRepo.findAllByRoleName(String.valueOf(userGet.getRole()));
+
+            return Profile
+                    .builder()
+                    .status(true)
+                    .statusCode(200)
+                    .statusMessage("Profile Get By " + randomId)
+                    .parentRandomId(userGet.getParentId())
+                    .randomId(userGet.getRandomId())
+                    .role(String.valueOf(userGet.getRole()))
+                    .gameResponseObjList(
+                            resObj.getGameList()
+                                    .stream()
+                                    .map(
+                                            game -> {
+                                                return GameResponseObj
+                                                        .builder()
+                                                        .gameCode(game.getGameCode())
+                                                        .gameId(game.getId())
+                                                        .gameRoute(game.getGameRoute())
+                                                        .gameConversion(String.valueOf(game.getConversationRate()))
+                                                        .gameName(game.getGameName())
+                                                        .build();
+                                            }
+                                    )
+                                    .collect(Collectors.toList()))
                     .sideMenus(navByRole.stream().map(
                             nav -> new SideMenu(
                                     nav.getId().intValue(),nav.getNavName(),nav.getNavCode()

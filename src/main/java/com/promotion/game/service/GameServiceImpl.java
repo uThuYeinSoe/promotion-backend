@@ -48,6 +48,7 @@ public class GameServiceImpl implements GameService{
                 .gameCode(request.getGameCode())
                 .conversationRate(request.getConversationRate())
                 .gameStatus(true)
+                .gameRoute(request.getGameRoute())
                 .build();
 
         Game resObj = gameRepo.save(gameObj);
@@ -75,8 +76,6 @@ public class GameServiceImpl implements GameService{
                     .statusMessage("Hello you haven't authorize to use this api")
                     .build();
         }
-
-        System.out.println(userGet);
 
         Optional<User> userAgent = userRepo.findByRandomId(request.getRandomId());
         User userAgentGet = userAgent.get();
@@ -136,7 +135,24 @@ public class GameServiceImpl implements GameService{
                     .gameList(userGet.getGames())
                     .build();
         }else if(userGet.getRole().equals(Role.USER)){
-            System.out.println("User Role");
+            userGet.getParentId();
+            Optional<User> agentUser = userRepo.findByRandomId(userGet.getParentId());
+            if(agentUser.isEmpty()){
+                return GameResponse
+                        .builder()
+                        .statusMessage("Can't Find Your Agent")
+                        .status(false)
+                        .statusCode(400)
+                        .build();
+            }
+            User agentUserGet = agentUser.get();
+            return GameResponse
+                    .builder()
+                    .statusMessage("API Good Working")
+                    .status(true)
+                    .statusCode(200)
+                    .gameList(agentUserGet.getGames())
+                    .build();
         }
 
         return null;

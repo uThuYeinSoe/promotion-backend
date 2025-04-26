@@ -30,6 +30,9 @@ public class Game {
     @Column(name="conversation_rate")
     private Integer conversationRate;
 
+    @Column(name = "game_route")
+    private String gameRoute;
+
     @ManyToMany(mappedBy = "games")
     @ToString.Exclude
     @JsonIgnore

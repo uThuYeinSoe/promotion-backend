@@ -6,14 +6,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Builder
 @AllArgsConstructor
+@Builder
 @NoArgsConstructor
-public class GameRequest {
-    private Integer id;
+public class GameResponseObj {
+    private Integer gameId;
     private String gameCode;
-    private String gameName;
-    private Boolean gameStatus;
-    private Integer conversationRate;
     private String gameRoute;
+    private String gameName;
+    private String gameConversion;
 }

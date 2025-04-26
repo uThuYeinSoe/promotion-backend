@@ -8,6 +8,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.apache.logging.log4j.util.Lazy;
 
+import java.util.Objects;
+
 @Entity
 @Data
 @Builder
@@ -43,4 +45,9 @@ public class GameTicket {
     private Boolean useStatus;
     @Column(name = "remark")
     private String remark;
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }
