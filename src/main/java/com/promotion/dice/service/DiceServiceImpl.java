@@ -1,5 +1,6 @@
-package com.promotion.spinwheel.service;
+package com.promotion.dice.service;
 
+import com.promotion.dice.dto.DiceResponse;
 import com.promotion.game.entity.Game;
 import com.promotion.game.repo.GameRepo;
 import com.promotion.gameItem.entity.GameItem;
@@ -20,26 +21,24 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class SpanWheelServiceImpl implements SpanWheelService{
+public class DiceServiceImpl implements DiceService{
 
     @Autowired private final UserRepo userRepo;
+    @Autowired private final GameRepo gameRepo;
     @Autowired private final GameItemRepo gameItemRepo;
     @Autowired private final GameTicketRepo gameTicketRepo;
-    @Autowired private final GameRepo gameRepo;
     @Autowired private final WinnerRepo winnerRepo;
-
 
     @Override
     @Transactional
-    public SpanWheelResponse getWinObj(String randomId) {
+    public DiceResponse getWinObj(String randomId) {
         Optional<User> user = userRepo.findByRandomId(randomId);
         User userGet = user.get();
         if(!userGet.getRole().equals(Role.USER)){
-            return SpanWheelResponse
+            return DiceResponse
                     .builder()
                     .status(false)
                     .statusCode(403)
@@ -49,7 +48,7 @@ public class SpanWheelServiceImpl implements SpanWheelService{
 
         Optional<User> agent = userRepo.findByRandomId(userGet.getParentId());
         if(agent.isEmpty()){
-            return SpanWheelResponse
+            return DiceResponse
                     .builder()
                     .status(false)
                     .statusCode(400)
@@ -58,11 +57,11 @@ public class SpanWheelServiceImpl implements SpanWheelService{
         }
         User agentGet = agent.get();
 
-        Optional<Game> gameObj = gameRepo.findById(1L);
+        Optional<Game> gameObj = gameRepo.findById(4L);
         Game gameObjGet = gameObj.get();
 
         if(gameObjGet.getConversationRate() > userGet.getTicket().getTicketAmt()) {
-            return SpanWheelResponse
+            return DiceResponse
                     .builder()
                     .status(false)
                     .statusCode(400)
@@ -71,7 +70,7 @@ public class SpanWheelServiceImpl implements SpanWheelService{
         }
 
         if(gameObjGet.getConversationRate() > agentGet.getTicket().getTicketAmt()) {
-            return SpanWheelResponse
+            return DiceResponse
                     .builder()
                     .status(false)
                     .statusCode(400)
@@ -83,12 +82,12 @@ public class SpanWheelServiceImpl implements SpanWheelService{
         Optional<Game> selectedGame = agentGet.getGames()
                 .stream()
                 .filter(
-                        game -> "0100".equals(game.getGameCode())
+                        game -> "0300".equals(game.getGameCode())
                 )
                 .findFirst();
 
         if(selectedGame.isEmpty()){
-            return SpanWheelResponse
+            return DiceResponse
                     .builder()
                     .status(false)
                     .statusCode(400)
@@ -123,7 +122,7 @@ public class SpanWheelServiceImpl implements SpanWheelService{
         ).toList());
 
         if(finalGameItemList.isEmpty()) {
-            return SpanWheelResponse
+            return DiceResponse
                     .builder()
                     .status(false)
                     .statusCode(400)
@@ -131,22 +130,33 @@ public class SpanWheelServiceImpl implements SpanWheelService{
                     .build();
         }
 
+        System.out.println("Before Collection Shuffle");
+        System.out.println(finalGameItemList);
+
         Collections.shuffle(finalGameItemList);
 
-        List<GameTicket> gameTickets = gameTicketRepo.findByAgentAndGameAndGameItemAndUseStatusTrue(agentGet,selectedGame.get(),finalGameItemList.getFirst());
+        GameItem selectedGameItem = finalGameItemList.get(0);
+        System.out.println("Selected Game Item");
+        System.out.println(selectedGameItem);
+
+        List<GameTicket> gameTickets = gameTicketRepo.findByAgentAndGameAndGameItemAndUseStatusTrue(agentGet,selectedGame.get(),selectedGameItem);
         gameTickets.getFirst().setUseStatus(false);
         gameTickets.getFirst().setRemark("Already Finished" + userGet.getRandomId());
         gameTicketRepo.save(gameTickets.getFirst());
 
+        List<Integer> pair = diceRandomTwoValue(Integer.valueOf(selectedGameItem.getGameItem()));
+        System.out.println("Pair Value");
+        System.out.println(pair);
 
-        var winObj = SpanWheelResponse.SpinWheelWinObj
+        var winObj = DiceResponse.DiceWinObj
                 .builder()
                 .gameId(selectedGame.get().getId())
                 .gameName(selectedGame.get().getGameName())
-                .gameItemId(finalGameItemList.getFirst().getId())
-                .gameItemName(finalGameItemList.getFirst().getGameItem())
-                .gameItemDesc(finalGameItemList.getFirst().getGameItemDesc())
+                .gameItemId(selectedGameItem.getId())
+                .gameItemName(selectedGameItem.getGameItem())
+                .gameItemDesc(selectedGameItem.getGameItemDesc())
                 .gameTicketNumber(gameTickets.getFirst().getTicketNumber())
+                .diceNumberObjList(pair)
                 .build();
 
         Ticket userTicketObj = userGet.getTicket();
@@ -172,12 +182,38 @@ public class SpanWheelServiceImpl implements SpanWheelService{
 
         winnerRepo.save(winnerObj);
 
-        return SpanWheelResponse
+        return DiceResponse
                 .builder()
                 .status(true)
                 .statusCode(200)
                 .statusMessage("You get reward " + gameItemList.getFirst().getGameItemDesc() + " and Ticket Number " + gameTickets.getFirst().getTicketNumber())
-                .spinWheelWinObj(winObj)
+                .diceWinObj(winObj)
                 .build();
+    }
+
+    public List<Integer> diceRandomTwoValue(Integer inputValue) {
+        if (inputValue == null || inputValue < 2 || inputValue > 18) {
+            System.out.println("Value must be between 2 and 18 (1 + 1 to 9 + 9)");
+            return Collections.emptyList();
+        }
+
+        List<int[]> validPairs = new ArrayList<>();
+
+        for (int a = 1; a <= 9; a++) {
+            int b = inputValue - a;
+            if (b >= 1 && b <= 9) {
+                validPairs.add(new int[]{a, b});
+            }
+        }
+
+        if (validPairs.isEmpty()) {
+            System.out.println("No valid pairs found.");
+            return Collections.emptyList();
+        }
+
+        Random random = new Random();
+        int[] selectedPair = validPairs.get(random.nextInt(validPairs.size()));
+
+        return Arrays.asList(selectedPair[0], selectedPair[1]);
     }
 }

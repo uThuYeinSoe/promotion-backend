@@ -2,6 +2,7 @@ package com.promotion.gameTicket.service;
 
 import com.promotion.game.entity.Game;
 import com.promotion.game.repo.GameRepo;
+import com.promotion.gameItem.dto.GameItemResp;
 import com.promotion.gameItem.entity.GameItem;
 import com.promotion.gameItem.repo.GameItemRepo;
 import com.promotion.gameTicket.dto.GameTicketRequest;
@@ -123,4 +124,6 @@ public class GameTicketServiceImpl implements GameTicketService{
                 .gameTicketResObjList(resObjList)
                 .build();
     }
+
+
 }

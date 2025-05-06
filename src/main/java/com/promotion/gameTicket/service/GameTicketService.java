@@ -1,5 +1,7 @@
 package com.promotion.gameTicket.service;
 
+import com.promotion.gameItem.dto.GameItemResp;
+import com.promotion.gameItem.entity.GameItem;
 import com.promotion.gameTicket.dto.GameTicketRequest;
 import com.promotion.gameTicket.dto.GameTicketResp;
 

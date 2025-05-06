@@ -84,6 +84,10 @@ public class SecurityConfiguration {
                 .requestMatchers(POST, "api/v1/promotion/pinwheel/winningValue").hasAuthority(String.valueOf(AGENT_CREATE))
                 .requestMatchers(GET, "api/v1/promotion/pinwheel/winningValue").hasAuthority(String.valueOf(USER_READ))
 
+                .requestMatchers("/api/v1/promotion/dice/**").hasAnyRole(ADMIN.name(),AGENT.name(),USER.name())
+                .requestMatchers(POST, "api/v1/promotion/dice/winningValue").hasAuthority(String.valueOf(AGENT_CREATE))
+                .requestMatchers(GET, "api/v1/promotion/dice/winningValue").hasAuthority(String.valueOf(USER_READ))
+
 
                 .anyRequest()
                 .authenticated()

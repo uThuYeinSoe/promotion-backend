@@ -8,4 +8,5 @@ public interface GameItemService {
     GameItemResp getGameItemAll(String randomId);
     GameItemResp updateStatusGameItemS(String randomId,GameItemRequest request);
     GameItemResp getGameItemByGame(Long id,String randomId);
+
 }
