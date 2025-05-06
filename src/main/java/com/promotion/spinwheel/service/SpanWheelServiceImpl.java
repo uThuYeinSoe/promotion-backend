@@ -1,19 +1,24 @@
 package com.promotion.spinwheel.service;
 
 import com.promotion.game.entity.Game;
+import com.promotion.game.repo.GameRepo;
 import com.promotion.gameItem.entity.GameItem;
 import com.promotion.gameItem.repo.GameItemRepo;
 import com.promotion.gameTicket.entity.GameTicket;
 import com.promotion.gameTicket.repo.GameTicketRepo;
 import com.promotion.spinwheel.dto.SpanWheelResponse;
+import com.promotion.ticket.entity.Ticket;
 import com.promotion.user.entity.Role;
 import com.promotion.user.entity.User;
 import com.promotion.user.repository.UserRepo;
+import com.promotion.winner.entity.Winner;
+import com.promotion.winner.repo.WinnerRepo;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -24,6 +29,8 @@ public class SpanWheelServiceImpl implements SpanWheelService{
     @Autowired private final UserRepo userRepo;
     @Autowired private final GameItemRepo gameItemRepo;
     @Autowired private final GameTicketRepo gameTicketRepo;
+    @Autowired private final GameRepo gameRepo;
+    @Autowired private final WinnerRepo winnerRepo;
 
 
     @Override
@@ -50,6 +57,28 @@ public class SpanWheelServiceImpl implements SpanWheelService{
         }
         User agentGet = agent.get();
 
+        Optional<Game> gameObj = gameRepo.findById(1L);
+        Game gameObjGet = gameObj.get();
+
+        if(gameObjGet.getConversationRate() > userGet.getTicket().getTicketAmt()) {
+            return SpanWheelResponse
+                    .builder()
+                    .status(false)
+                    .statusCode(400)
+                    .statusMessage("Hello User Your Ticket Amount is not Enough")
+                    .build();
+        }
+
+        if(gameObjGet.getConversationRate() > agentGet.getTicket().getTicketAmt()) {
+            return SpanWheelResponse
+                    .builder()
+                    .status(false)
+                    .statusCode(400)
+                    .statusMessage("Hello User Your Agent Ticket Amount is not Enough Please contact with your agent")
+                    .build();
+        }
+
+        //Agent သည် Game ကို သုံးခွင့် ရ / မရ ဆိုတာကို စစ်တာ
         Optional<Game> selectedGame = agentGet.getGames()
                 .stream()
                 .filter(
@@ -66,7 +95,9 @@ public class SpanWheelServiceImpl implements SpanWheelService{
                     .build();
         }
 
+        //game Item တွေသည် true သာဖြစ်ရမည်။
         List<GameItem> gameItemList = gameItemRepo.findByAgentAndGameAndGameItemStatusTrue(agentGet,selectedGame.get());
+        //ရလာတဲ့ gameItem တွေရဲ့ ticket true တွေကို ဆွဲထုတ်တာဖြစ်ပါတယ်။
         List<GameItem> gameItemListWithGameTicketTrue = gameTicketRepo.findActiveGameItemsByAgentAndGame(agentGet,selectedGame.get());
 
         List<GameItem> finalGameItemList = new ArrayList<>(gameItemList.stream().filter(
@@ -86,9 +117,6 @@ public class SpanWheelServiceImpl implements SpanWheelService{
 
         Collections.shuffle(finalGameItemList);
 
-        System.out.println(finalGameItemList);
-
-
         List<GameTicket> gameTickets = gameTicketRepo.findByAgentAndGameAndGameItemAndUseStatusTrue(agentGet,selectedGame.get(),finalGameItemList.getFirst());
         gameTickets.getFirst().setUseStatus(false);
         gameTickets.getFirst().setRemark("Already Finished" + userGet.getRandomId());
@@ -104,6 +132,29 @@ public class SpanWheelServiceImpl implements SpanWheelService{
                 .gameItemDesc(gameItemList.getFirst().getGameItemDesc())
                 .gameTicketNumber(gameTickets.getFirst().getTicketNumber())
                 .build();
+
+        Ticket userTicketObj = userGet.getTicket();
+        userTicketObj.setTicketAmt(userTicketObj.getTicketAmt() - gameObj.get().getConversationRate());
+        userGet.setTicket(userTicketObj);
+        userRepo.save(userGet);
+
+        Ticket agentTicketObj = agentGet.getTicket();
+        agentTicketObj.setTicketAmt(agentTicketObj.getTicketAmt() - gameObj.get().getConversationRate());
+        agentGet.setTicket(agentTicketObj);
+        userRepo.save(agentGet);
+
+        Winner winnerObj = Winner
+                .builder()
+                .winnerUser(userGet)
+                .winnerAgent(agentGet)
+                .gameItem(winObj.getGameItemName())
+                .winValue(winObj.getGameItemDesc())
+                .gameName(winObj.getGameName())
+                .useTicketAmt(gameObj.get().getConversationRate())
+                .winningDate(LocalDateTime.now())
+                .build();
+
+        winnerRepo.save(winnerObj);
 
         return SpanWheelResponse
                 .builder()

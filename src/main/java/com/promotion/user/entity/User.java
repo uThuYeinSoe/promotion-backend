@@ -5,6 +5,7 @@ import com.promotion.game.entity.Game;
 import com.promotion.gameItem.entity.GameItem;
 import com.promotion.gameTicket.entity.GameTicket;
 import com.promotion.ticket.entity.Ticket;
+import com.promotion.winner.entity.Winner;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -38,7 +39,6 @@ public class User implements UserDetails {
     @Column(name="parent_id")
     private String parentId;
 
-
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "ticket_id", referencedColumnName = "id")
     @ToString.Exclude
@@ -57,6 +57,12 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "agent", cascade = CascadeType.ALL)
     private List<GameTicket> gameTicketList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "winnerUser" , cascade = CascadeType.ALL)
+    private List<Winner> winnerUserList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "winnerAgent" , cascade = CascadeType.ALL)
+    private List<Winner> winnerAgentLit = new ArrayList<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -42,9 +42,6 @@ public class TicketServiceImpl implements TicketService{
                     .build();
         }
 
-        System.out.println(userGet);
-        System.out.println(userGet.getTicket());
-
         if(userGet.getTicket() == null){
             Ticket ticketObj = Ticket
                     .builder()

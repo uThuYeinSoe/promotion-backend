@@ -9,13 +9,14 @@ import com.promotion.navigation.entity.Navigation;
 import com.promotion.navigation.repo.NavigationRepo;
 import com.promotion.ticket.dto.AgentGameAuthority;
 import com.promotion.ticket.entity.Ticket;
-import com.promotion.user.dto.Agent;
-import com.promotion.user.dto.AgentResponse;
-import com.promotion.user.dto.Profile;
-import com.promotion.user.dto.SideMenu;
+import com.promotion.ticket.repo.TicketRepo;
+import com.promotion.user.dto.*;
 import com.promotion.user.entity.Role;
 import com.promotion.user.entity.User;
+import com.promotion.user.entity.UserLevel;
+import com.promotion.user.repository.UserLevelRepo;
 import com.promotion.user.repository.UserRepo;
+import com.promotion.winner.repo.WinnerRepo;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,16 +29,17 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class ProfileServiceImpl implements ProfileService{
 
     @Autowired private final UserRepo userRepo;
     @Autowired private final NavigationRepo navigationRepo;
     @Autowired private final GameRepo gameRepo;
     @Autowired private final GameService gameService;
+    @Autowired private final TicketRepo ticketRepo;
+    @Autowired private final UserLevelRepo userLevelRepo;
+    @Autowired private final WinnerRepo winnerRepo;
 
     @Override
-    @Transactional
     public Profile getProfile(String randomId) {
         Optional<User> user = userRepo.findByRandomId(randomId);
         User userGet = user.get();
@@ -193,6 +195,65 @@ public class ProfileServiceImpl implements ProfileService{
                 .statusCode(200)
                 .statusMessage("API Good Working")
                 .agents(agentList)
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public UserLevelDataResponse saveUserLevelData(String randomId,UserLevelDataRequest request) {
+        Optional<User> user = userRepo.findByRandomId(randomId);
+        User userGet = user.get();
+
+        if(!request.getParentId().equals(userGet.getParentId())){
+            return UserLevelDataResponse
+                    .builder()
+                    .status(false)
+                    .statusCode(401)
+                    .statusMessage("Hello your agent is something wrong, please contact with your agent")
+                    .build();
+        }
+
+        Ticket userTicket = Ticket
+                .builder()
+                .ticketAmt(request.getTicketAmt())
+                .user(userGet)
+                .build();
+
+        if(userGet.getTicket() == null){
+            ticketRepo.save(userTicket);
+            System.out.println("Working Null");
+        }else{
+            userTicket.setId(userGet.getTicket().getId());
+            ticketRepo.save(userTicket);
+            System.out.println("Working Ticket");
+        }
+
+        userGet.setTicket(userTicket);
+        userRepo.save(userGet);
+
+        Optional<UserLevel> userLevel = userLevelRepo.findByRandomIdAndParentId(userGet.getRandomId(),"12345678");
+        UserLevel userLevelObj = userLevel
+                .map(existingLevel -> UserLevel.builder()
+                        .id(existingLevel.getId())
+                        .outStandingUserName(request.getUserName())
+                        .outStandingUniqueId(request.getUniqueId())
+                        .parentId(userGet.getParentId())
+                        .randomId(userGet.getRandomId())
+                        .build())
+                .orElseGet(() -> UserLevel.builder()
+                        .outStandingUserName(request.getUserName())
+                        .outStandingUniqueId(request.getUniqueId())
+                        .parentId(userGet.getParentId())
+                        .randomId(userGet.getRandomId())
+                        .build());
+
+        userLevelRepo.save(userLevelObj);
+
+        return UserLevelDataResponse
+                .builder()
+                .statusMessage("API Working")
+                .statusCode(200)
+                .status(true)
                 .build();
     }
 }

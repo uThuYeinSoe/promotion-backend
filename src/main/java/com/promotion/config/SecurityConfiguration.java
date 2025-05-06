@@ -68,6 +68,7 @@ public class SecurityConfiguration {
                 .requestMatchers("/api/v1/promotion/uc/**").hasAnyRole(ADMIN.name(),AGENT.name(),USER.name())
                 .requestMatchers(GET, "api/v1/promotion/uc/profile").hasAnyAuthority(String.valueOf(ADMIN_READ),String.valueOf(AGENT_READ),String.valueOf(USER_READ))
                 .requestMatchers(GET, "api/v1/promotion/uc/getAgent").hasAuthority(String.valueOf(ADMIN_READ))
+                .requestMatchers(POST, "api/v1/promotion/uc/userOnly").hasAuthority(String.valueOf(USER_CREATE))
 
                 .requestMatchers("/api/v1/promotion/gi/**").hasAnyRole(ADMIN.name(),AGENT.name(),USER.name())
                 .requestMatchers(POST, "api/v1/promotion/gi/gameItem").hasAuthority(String.valueOf(AGENT_CREATE))
